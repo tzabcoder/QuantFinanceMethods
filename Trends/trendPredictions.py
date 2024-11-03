@@ -8,6 +8,7 @@ warnings.filterwarnings('ignore')
 
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import train_test_split
+from sklearn.cluster import KMeans
 
 def create_lags(data, lags):
     """
@@ -46,13 +47,13 @@ def main():
     data.dropna(inplace=True)
 
     # ----------------------------------------------------------------
-    # Autoregression on the returns and lagged returns
+    # Autoregression on the directions and lagged returns
     model = LinearRegression()
 
     N = 0.8
     T = int(N * len(data))
 
-    # Split data
+    # Split data (using a sequential data split)
     train, test = data.iloc[0:T+1], data.iloc[T+1:len(data)+1]
 
     # .fit() fits the LinearRegression model to the data
@@ -71,10 +72,35 @@ def main():
     test['direction_strat'] = test['direction_ols'] * test['Log_Returns']
 
     # Calculate cummulative returns
-    test['cumm_strat'] = (1 + test['direction_strat']).cumprod() - 1
+    test['cumm_reg_strat'] = (1 + test['direction_strat']).cumprod() - 1
     test['cumm_market'] = (1 + test['Log_Returns']).cumprod() - 1
 
-    plt.plot(test['cumm_strat'], label='Direction Prediction')
+    # ----------------------------------------------------------------
+    # K-means clustering on the directions and lagged returns
+    model = KMeans(n_clusters=2, random_state=0)
+
+    model.fit(train[cols])
+
+    KMeans(algorithm='auto', copy_x=True, init='k-means++', max_iter=300,
+        n_clusters=2, n_init=10, random_state=0, tol=0.0001, verbose=0)
+
+    # Predict the direction based on the K-means model
+    test['pos_clus'] = model.predict(test[cols])
+    test['pos_clus'] = np.where(test['pos_clus'] == 1, 1, -1)
+
+    # Plot the 2 groups
+    plt.figure(figsize=(10, 6))
+    plt.scatter(test[cols].iloc[:, 0], test[cols].iloc[:, 1],
+        c=test['pos_clus'], cmap='coolwarm')
+    plt.show()
+
+    # Calculate the strategy's returns
+    test['cluster_strat'] = test['pos_clus'] * test['Log_Returns']
+    test['cumm_cluster_strat'] = (1 + test['cluster_strat']).cumprod() - 1
+
+    # Plot the strategy's results vs market value
+    plt.plot(test['cumm_reg_strat'], label='Regression')
+    plt.plot(test['cumm_cluster_strat'], label='Cluster')
     plt.plot(test['cumm_market'], label='Market')
     plt.legend()
     plt.show()
