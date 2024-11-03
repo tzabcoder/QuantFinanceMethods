@@ -24,4 +24,4 @@ The data is lagged N times (in this example 2). Each lag is the indepent variabl
 the dependent variable, the model is fitted as a multiple autoregression. The train data is then used to predict the directionality of the test data.
 
 Distribution of daily log PY returns<br/>
-!
+![SPY Daily Log Returns](
