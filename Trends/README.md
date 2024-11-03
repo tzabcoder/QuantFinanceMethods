@@ -16,3 +16,12 @@ Daily trend on minute data<br/>
 
 Distribution of minute t-values<br/>
 ![TValDistribution](https://github.com/tzabcoder/QuantFinanceMethods/assets/60833046/368dee9c-92e3-4f24-bd63-e2d6b96454fa)
+
+---
+## trendPredictions.py
+This program implements a vectorized backtest of a trend prediction strategy using OLS regression. The data us extracted for ***SPY***, which is the ETF modeling the S&P 500. Log returns are calculated for the index to be used direcly in the autoregression.
+The data is lagged N times (in this example 2). Each lag is the indepent variable for the multi-autoregression. Direction is determined as (+1, 0, -1) for a positive, neutral, or negative daily return, respectively. Given the lagged inputs and the direction as
+the dependent variable, the model is fitted as a multiple autoregression. The train data is then used to predict the directionality of the test data.
+
+Distribution of daily log PY returns<br/>
+!
